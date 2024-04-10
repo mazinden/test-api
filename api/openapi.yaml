@@ -39,7 +39,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/user'
-                x-content-type: application/json
               example:
               - id: 1
                 name: Анна
