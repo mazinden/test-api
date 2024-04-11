@@ -87,7 +87,7 @@ paths:
       parameters:
       - name: id
         in: path
-        description: Уникальный идентефикатор пользователя
+        description: Уникальный идентификатор пользователя
         required: true
         style: simple
         explode: false
