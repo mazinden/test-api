@@ -82,11 +82,12 @@ paths:
     get:
       tags:
       - users
-      summary: Get by id
+      summary: Получение пользователя по id
       operationId: usersIdGET
       parameters:
       - name: id
         in: path
+        description: Уникальный идентификатор пользователя
         required: true
         style: simple
         explode: false
