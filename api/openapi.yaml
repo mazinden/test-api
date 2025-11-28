@@ -1,167 +1,403 @@
 openapi: 3.0.0
+
 info:
   title: Пример API для работы с пользователями
-  description: "API для создания, получения и удаления пользователей."
-  termsOfService: https://example.com/terms
-  contact:
-    name: Имя контактного лица
-    email: contact@example.com
-  license:
-    name: Лицензия API
-    url: https://example.com/license
-  version: 0.0.1
-externalDocs:
-  description: Подробная документация по API
-  url: https://example.com/docs
-servers:
-- url: http://localhost:8080
-  description: Основной сервер
-- url: http://localhost:8080/test
-  description: Тестовый сервер
+  description: API для создания, получения, обновления и удаления пользователей.
+  version: 1.0.0
+
 security:
-- api_key: []
-tags:
-- name: users
-  description: Операции с пользователями
+  - api_key: []
+
+servers:
+  - url: https://api.documentat.io/api/prod
+    description: Основной сервер
+  - url: https://api.documentat.io/api/dev
+    description: Тестовый сервер
+
 paths:
   /users:
     get:
-      tags:
-      - users
       summary: Получить список всех пользователей
       operationId: usersGET
-      responses:
-        "200":
-          description: Список пользователей успешно получен
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/user'
-                x-content-type: application/json
-              example:
-              - id: 1
-                name: Анна
-                email: anna@example.com
-              - id: 2
-                name: Иван
-                email: ivan@example.com
-      x-swagger-router-controller: Users
-    post:
       tags:
-      - users
+        - users
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Максимальное количество элементов на странице
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          $ref: '#/components/responses/UserListSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
       summary: Создать нового пользователя
       operationId: usersPOST
+      tags:
+        - users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/create_user'
-            example:
-              name: Новый Пользователь
-              email: newuser@example.com
-        required: true
+              $ref: '#/components/schemas/CreateUser'
       responses:
-        "201":
-          description: Пользователь успешно создан
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-              example:
-                id: 3
-                name: Новый Пользователь
-                email: newuser@example.com
-        "400":
-          description: Неверный запрос (неполные или некорректные данные)
-        "500":
-          description: Внутренняя ошибка сервера
-      x-swagger-router-controller: Users
+        '201':
+          $ref: '#/components/responses/UserCreationSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /users/{id}:
     get:
-      tags:
-      - users
-      summary: Получение пользователя по id
+      summary: Получить информацию о пользователе по ID
       operationId: usersIdGET
-      parameters:
-      - name: id
-        in: path
-        description: Уникальный идентификатор пользователя
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-      responses:
-        "200":
-          description: Информация о пользователе успешно получена
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-              example:
-                id: 1
-                name: Анна
-                email: anna@example.com
-        "404":
-          description: Пользователь не найден
-        "500":
-          description: Внутренняя ошибка сервера
-      x-swagger-router-controller: Users
-    delete:
       tags:
-      - users
+        - users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор пользователя
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      summary: ""
+      operationId: usersIdPUT
+      tags:
+        - users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+      responses:
+        '200':
+          $ref: '#/components/responses/UserUpdateSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    patch:
+      summary: ""
+      operationId: usersIdPATCH
+      tags:
+        - users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartialUserUpdate'
+      responses:
+        '200':
+          $ref: '#/components/responses/UserUpdateSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
       summary: Удалить пользователя
       operationId: usersIdDELETE
+      tags:
+        - users
       parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор пользователя
+          schema:
+            type: integer
       responses:
-        "204":
-          description: Пользователь успешно удален
-        "404":
-          description: Пользователь не найден
-        "500":
-          description: Внутренняя ошибка сервера
-      x-swagger-router-controller: Users
+        '204':
+          $ref: '#/components/responses/UserDeleteSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
 components:
   schemas:
-    user:
-      required:
-      - email
-      - id
-      - name
+    User:
       type: object
+      required:
+        - id
+        - username
+        - email
+        - firstName
+        - lastName
+        - address
+        - age
+        - isEmployee
+        - accountStatus
       properties:
         id:
           type: integer
           format: int64
-        name:
+          description: Уникальный идентификатор пользователя
+        username:
           type: string
         email:
           type: string
-      example:
-        name: name
-        id: 0
-        email: email
-    create_user:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        address:
+          type: object
+          properties:
+            country:
+              type: string
+            city:
+              type: string
+            street:
+              type: string
+            house:
+              type: string
+          required:
+            - country
+            - city
+            - street
+            - house
+        age:
+          type: integer
+        isEmployee:
+          type: boolean
+          default: true
+        accountStatus:
+          type: string
+          default: active
+          enum:
+            - active
+            - inactive
+            - suspended
+
+    CreateUser:
+      type: object
       required:
-      - email
-      - name
+        - username
+        - email
+        - firstName
+        - lastName
+        - address
+        - age
+        - isEmployee
+        - accountStatus
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        address:
+          type: object
+          properties:
+            country:
+              type: string
+            city:
+              type: string
+            street:
+              type: string
+            house:
+              type: string
+          required:
+            - country
+            - city
+            - street
+            - house
+        age:
+          type: integer
+        isEmployee:
+          type: boolean
+          default: true
+        accountStatus:
+          type: string
+          default: active
+          enum:
+            - active
+            - inactive
+            - suspended
+
+    PartialUserUpdate:
       type: object
       properties:
-        name:
+        username:
           type: string
         email:
           type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        address:
+          type: object
+          properties:
+            country:
+              type: string
+            city:
+              type: string
+            street:
+              type: string
+            house:
+              type: string
+        age:
+          type: integer
+        isEmployee:
+          type: boolean
+          default: true
+        accountStatus:
+          type: string
+          default: active
+          enum:
+            - active
+            - inactive
+            - suspended
+
+    error:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+  responses:
+    UserListSuccess:
+      description: Список пользователей успешно получен
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/User'
+
+    Success:
+      description: Данные успешно получены
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+
+    UserCreationSuccess:
+      description: Пользователь успешно создан
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+
+    UserUpdateSuccess:
+      description: Данные пользователя успешно обновлены
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+
+    UserDeleteSuccess:
+      description: Пользователь успешно удален
+
+    UserNotFound:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    Unauthorized:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    Conflict:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    MethodNotAllowed:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    ServerError:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    UnprocessableEntity:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
   securitySchemes:
     api_key:
       type: apiKey
-      name: Authorization
+      name: Token
       in: header
+
+tags:
+  - name: users
+    description: Операции с пользователями
