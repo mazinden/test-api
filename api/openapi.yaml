@@ -81,7 +81,7 @@ paths:
           $ref: '#/components/responses/ServerError'
 
     put:
-      summary: ""
+      summary: "Обновить всю информацию о пользователе по ID"
       operationId: usersIdPUT
       tags:
         - users
@@ -89,6 +89,7 @@ paths:
         - name: id
           in: path
           required: true
+          description: "Уникальный идентификатор пользователя"
           schema:
             type: integer
       requestBody:
